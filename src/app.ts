@@ -6,6 +6,8 @@ import * as Router from 'koa-router';
 import * as koaLogger from 'koa-logger';
 import * as koaBody from 'koa-body';
 
+import marketSyncer from './libs/marketSyncer'
+
 dotEnv.config()
 
 import config from './config';
@@ -31,5 +33,7 @@ app.listen(config.serverPort, () => {
     console.log(`Server is listening on port ${config.serverPort}.`)
     app.emit("app_started")
 })
+
+marketSyncer.startSync()
 
 module.exports = app
