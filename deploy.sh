@@ -1,4 +1,4 @@
-source .env
+source .env.production
 sudo docker build -t axie-egg:latest .
 sudo docker 2>/dev/null stop axie-egg-container | true
 sudo docker 2>/dev/null rm axie-egg-container | true

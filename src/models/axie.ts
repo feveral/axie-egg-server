@@ -1,50 +1,97 @@
-import MarketFetcher from "../libs/marketFetcher";
+import MarketFetcher from '../libs/marketFetcher';
+import Price from './price';
 
 enum AxieStage {
     egg = 'egg',
     adult = 'adult',
 }
 
-class Axie {
+class AxieStats {
+    public hp: number = 0;
+    public speed: number = 0;
+    public skill: number = 0;
+    public morale: number = 0;
+}
 
-    private _id: string;
-    private _name: string;
-    private _image: string;
-    private _price: string;
-    private _priceUSD: string;
-    private _stage: AxieStage;
-    private _matronId: string;
-    private _sireId: string;
-    private _matron: Axie = null;
-    private _sire: Axie = null;
+class AxieAuction {
+    public _startingPrice: Price;
+    public _endingPrice: Price;
+    public _startingTimestamp: number;
+    public _endingTimestamp: number;
     
-    constructor (id: string, name: string, image: string, price: string, priceUSD: string, stage: AxieStage, matronId: string, sireId: string) {
-        this._id = id;
-        this._name = name;
-        this._image = image;
-        this._price = price;
-        this._priceUSD = priceUSD;
-        this._stage = stage;
-        this._matronId = matronId;
-        this._sireId = sireId;
+    public get duration () : number {
+        return this._endingTimestamp - this._startingTimestamp
     }
 
-    public get id() { return this._id; }
-    public get name() { return this._name; }
-    public get image() { return this._image; }
-    public get price() { return this._price; }
-    public get priceUSD() { return this._priceUSD; }
-    public get stage() { return this._stage; }
-    public get matronId() { return this._matronId; }
-    public get sireId() { return this._sireId; }
+    public set startingTimestamp (v : string) {
+        this._startingTimestamp = parseInt(v);
+    }
 
-    public async getParents(): Promise<Axie[]> {
-        if (this._matron === null || this._sire === null) {
-            this._matron = await MarketFetcher.getAxie(this._matronId);
-            this._sire = await MarketFetcher.getAxie(this._sireId);
-        }
-        return [this._matron, this._sire]
+    public set endingTimestamp (v : string) {
+        this._endingTimestamp = parseInt(v);
+    }
+
+    public set startingPrice (v : string) {
+        this._startingPrice = new Price(v);
+    }
+    
+    public set endingPrice (v : string) {
+        this._endingPrice = new Price(v);
+    }
+    
+    //TODO: not yet test
+    public get currentPrice() : Price {
+        return new Price((Date.now() / 1000 - this._startingTimestamp) /  (this._endingTimestamp - this._startingTimestamp));
     }
 }
 
-export {Axie, AxieStage};
+class Axie {
+
+    public id: string;
+    public name: string;
+    public image: string;
+    public price: string;
+    public priceUSD: string;
+    public stage: AxieStage;
+    public matronId: string;
+    public sireId: string;
+    public matron: Axie = null;
+    public sire: Axie = null;
+    public stats: AxieStats = new AxieStats();
+    public auction: AxieAuction = new AxieAuction();
+    
+    constructor (id: string, name: string, image: string, price: string, priceUSD: string, stage: AxieStage, matronId: string, sireId: string) {
+        this.id = id;
+        this.name = name;
+        this.image = image;
+        this.price = price;
+        this.priceUSD = priceUSD;
+        this.stage = stage;
+        this.matronId = matronId;
+        this.sireId = sireId;
+    }
+
+    public setStats (hp: number, speed: number, skill: number, morale: number) {
+        this.stats.hp = hp;
+        this.stats.speed = speed;
+        this.stats.skill = skill;
+        this.stats.morale = morale;
+    }
+
+    public setAuction (startingPrice: string, endingPrice: string, startingTimestamp: string, endingTimestamp: string) {
+        this.auction.startingPrice = startingPrice;
+        this.auction.endingPrice = endingPrice;
+        this.auction.startingTimestamp = startingTimestamp;
+        this.auction.endingTimestamp = endingTimestamp;
+    }
+
+    public async getParents(): Promise<Axie[]> {
+        if (this.matron === null || this.sire === null) {
+            this.matron = await MarketFetcher.getAxie(this.matronId);
+            this.sire = await MarketFetcher.getAxie(this.sireId);
+        }
+        return [this.matron, this.sire]
+    }
+}
+
+export {Axie, AxieStage, AxieAuction};

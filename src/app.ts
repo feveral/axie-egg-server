@@ -8,7 +8,7 @@ import * as koaBody from 'koa-body';
 
 import marketSyncer from './libs/marketSyncer'
 
-dotEnv.config()
+dotEnv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development' })
 
 import config from './config';
 import routes from './routes';
@@ -30,10 +30,11 @@ app.use((ctx) => {
 })
 
 app.listen(config.serverPort, () => {
-    console.log(`Server is listening on port ${config.serverPort}.`)
+    console.log(`[Info] Mode: ${process.env.NODE_ENV}`)
+    console.log(`[Info] Server is listening on port ${config.serverPort}.`)
     app.emit("app_started")
 })
 
-marketSyncer.startSync()
+// marketSyncer.startSync()
 
 module.exports = app
