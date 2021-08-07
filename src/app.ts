@@ -8,7 +8,7 @@ import * as koaBody from 'koa-body';
 
 import marketSyncer from './libs/marketSyncer'
 
-dotEnv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development' })
+dotEnv.config({})
 
 import config from './config';
 import routes from './routes';
