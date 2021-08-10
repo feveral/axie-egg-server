@@ -21,6 +21,7 @@
   "homepage": "https://github.com/feveral/axie-egg-server#readme",
   "dependencies": {
     "@koa/cors": "^3.1.0",
+    "agp-npm": "^1.0.7",
     "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "koa": "^2.13.1",

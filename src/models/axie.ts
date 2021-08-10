@@ -1,5 +1,9 @@
+import { AxieGene } from 'agp-npm/dist/axie-gene';
+import { Cls } from 'agp-npm/dist/models/cls';
+import { ColorGene } from 'agp-npm/dist/models/color';
+import { Part } from 'agp-npm/dist/models/part';
 import MarketFetcher from '../libs/marketFetcher';
-import Price from './price';
+import AxieAuction from './auction';
 
 enum AxieStage {
     egg = 'egg',
@@ -13,45 +17,10 @@ class AxieStats {
     public morale: number = 0;
 }
 
-class AxieAuction {
-    public _startingPrice: Price;
-    public _endingPrice: Price;
-    public _startingTimestamp: number;
-    public _endingTimestamp: number;
-    
-    public get duration () : number {
-        return this._endingTimestamp - this._startingTimestamp
-    }
-
-    public set startingTimestamp (v : string) {
-        this._startingTimestamp = parseInt(v);
-    }
-
-    public set endingTimestamp (v : string) {
-        this._endingTimestamp = parseInt(v);
-    }
-
-    public set startingPrice (v : string) {
-        this._startingPrice = new Price(v);
-    }
-    
-    public set endingPrice (v : string) {
-        this._endingPrice = new Price(v);
-    }
-    
-    //TODO: not yet test
-    public get currentPrice() : Price {
-        return new Price((Date.now() / 1000 - this._startingTimestamp) /  (this._endingTimestamp - this._startingTimestamp));
-    }
-}
-
 class Axie {
-
     public id: string;
     public name: string;
     public image: string;
-    public price: string;
-    public priceUSD: string;
     public stage: AxieStage;
     public matronId: string;
     public sireId: string;
@@ -59,16 +28,18 @@ class Axie {
     public sire: Axie = null;
     public stats: AxieStats = new AxieStats();
     public auction: AxieAuction = new AxieAuction();
+    public geneCode: string;
+    private _gene: AxieGene;
     
-    constructor (id: string, name: string, image: string, price: string, priceUSD: string, stage: AxieStage, matronId: string, sireId: string) {
+    constructor (id: string, name: string, image: string, stage: AxieStage, matronId: string, sireId: string, geneCode: string) {
         this.id = id;
         this.name = name;
         this.image = image;
-        this.price = price;
-        this.priceUSD = priceUSD;
         this.stage = stage;
         this.matronId = matronId;
         this.sireId = sireId;
+        this.geneCode = geneCode;
+        this._gene = (geneCode === '0x0') ? null : new AxieGene(geneCode);
     }
 
     public setStats (hp: number, speed: number, skill: number, morale: number) {
@@ -79,18 +50,75 @@ class Axie {
     }
 
     public setAuction (startingPrice: string, endingPrice: string, startingTimestamp: string, endingTimestamp: string) {
-        this.auction.startingPrice = startingPrice;
-        this.auction.endingPrice = endingPrice;
-        this.auction.startingTimestamp = startingTimestamp;
-        this.auction.endingTimestamp = endingTimestamp;
+        this.auction.setTimestamp(startingTimestamp, endingTimestamp);
+        this.auction.setPrice(startingPrice, endingPrice);
+    }
+
+    public async loadParent() {
+        this.matron = await MarketFetcher.getAxie(this.matronId);
+        this.sire = await MarketFetcher.getAxie(this.sireId);        
     }
 
     public async getParents(): Promise<Axie[]> {
         if (this.matron === null || this.sire === null) {
-            this.matron = await MarketFetcher.getAxie(this.matronId);
-            this.sire = await MarketFetcher.getAxie(this.sireId);
+            await this.loadParent()
         }
         return [this.matron, this.sire]
+    }
+
+    public get cls() : Cls {
+        return this._gene !== null ? this._gene.cls : null
+    }
+
+    public get color() : ColorGene {
+        return this._gene !== null ? this._gene.color : null
+    }
+
+    public get eyes() : Part {
+        return this._gene !== null ? this._gene.eyes : null
+    }
+
+    public get ears() : Part {
+        return this._gene !== null ? this._gene.ears : null
+    }
+
+    public get mouth() : Part {
+        return this._gene !== null ? this._gene.mouth : null
+    }
+
+    public get horn() : Part {
+        return this._gene !== null ? this._gene.horn : null
+    }
+
+    public get back() : Part {
+        return this._gene !== null ? this._gene.back : null
+    }
+
+    public get tail() : Part {
+        return this._gene !== null ? this._gene.tail : null
+    }
+
+    json () {
+        return {
+            id: this.id,
+            name: this.name,
+            image: this.image,
+            stage: this.stage,
+            stats: this.stats,
+            matronId: this.matronId,
+            sireId: this.sireId,
+            geneCode: this.geneCode,
+            gene: {
+                cls: this.cls,
+                color: this.color,
+                eyes: this.eyes,
+                ears: this.ears,
+                mouth: this.mouth,
+                horn: this.horn,
+                back: this.back,
+                tail: this.tail,
+            }
+        }
     }
 }
 
