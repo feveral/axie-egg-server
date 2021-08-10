@@ -23,7 +23,6 @@ class Price {
         return this._valueNumber
     }
     
-    //TODO: not yet test
     private _toNumber (value: string) {
         let num = 0;
         const reversedValue = this._reverseString(value)
@@ -33,7 +32,6 @@ class Price {
         return num;
     }
 
-    //TODO: not yet test
     private _toString (value: number) {
         let str = Math.floor(value).toString();
         for (let i = 0; i < 18; i++) {
