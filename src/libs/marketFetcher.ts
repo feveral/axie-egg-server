@@ -66,10 +66,13 @@ class MarketFetcher {
         const axie = new Axie(  data.id, data.name, data.image, 
                                 data.stage === 1 ? AxieStage.egg : AxieStage.adult,
                                 data.matronId, data.sireId, data.genes)
-        axie.setAuction(data.auction.startingPrice, 
-                        data.auction.endPrice,
-                        data.auction.startingTimestamp,
-                        data.auction.endingTimestamp)
+        axie.setStats(data.stats.hp, data.stats.speed, data.stats.skill, data.stats.morale)
+        if (data.auction !== null) {
+            axie.setAuction(data.auction.startingPrice, 
+                data.auction.endPrice,
+                data.auction.startingTimestamp,
+                data.auction.endingTimestamp)
+        }
         console.log(`[MarketFetcher] get axie: ${axie.id}`)
         return axie
     }

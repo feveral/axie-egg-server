@@ -38,7 +38,7 @@ class MarketSyncer {
         for (const id of eggIdsResult[1]) {
             if (! (id in this._eggSyncs)) {
                 const axie = await MarketFetcher.getAxie(id)
-                await axie.getParents()
+                await axie.loadParents()
                 await Timer.wait(300)
                 this._eggSyncs.set(id, new EggSync(syncId, axie))
             }

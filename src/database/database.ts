@@ -1,6 +1,4 @@
 import { Collection, Db, MongoClient } from "mongodb";
-
-const mongo = require('mongodb').MongoClient;
 import config from '../config'
 
 class Database {

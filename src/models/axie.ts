@@ -4,6 +4,7 @@ import { ColorGene } from 'agp-npm/dist/models/color';
 import { Part } from 'agp-npm/dist/models/part';
 import MarketFetcher from '../libs/marketFetcher';
 import AxieAuction from './auction';
+import database from '../database/database';
 
 enum AxieStage {
     egg = 'egg',
@@ -18,6 +19,7 @@ class AxieStats {
 }
 
 class Axie {
+    public static COLLECTION_NAME = 'axie'
     public id: string;
     public name: string;
     public image: string;
@@ -27,7 +29,7 @@ class Axie {
     public matron: Axie = null;
     public sire: Axie = null;
     public stats: AxieStats = new AxieStats();
-    public auction: AxieAuction = new AxieAuction();
+    public auction: AxieAuction = null;
     public geneCode: string;
     private _gene: AxieGene;
     
@@ -50,52 +52,53 @@ class Axie {
     }
 
     public setAuction (startingPrice: string, endingPrice: string, startingTimestamp: string, endingTimestamp: string) {
+        this.auction = new AxieAuction();
         this.auction.setTimestamp(startingTimestamp, endingTimestamp);
         this.auction.setPrice(startingPrice, endingPrice);
     }
 
-    public async loadParent() {
+    public async loadParents() {
         this.matron = await MarketFetcher.getAxie(this.matronId);
         this.sire = await MarketFetcher.getAxie(this.sireId);        
     }
 
     public async getParents(): Promise<Axie[]> {
         if (this.matron === null || this.sire === null) {
-            await this.loadParent()
+            await this.loadParents()
         }
         return [this.matron, this.sire]
     }
 
     public get cls() : Cls {
-        return this._gene !== null ? this._gene.cls : null
+        return this._gene ? this._gene.cls : null
     }
 
     public get color() : ColorGene {
-        return this._gene !== null ? this._gene.color : null
+        return this._gene ? this._gene.color : null
     }
 
     public get eyes() : Part {
-        return this._gene !== null ? this._gene.eyes : null
+        return this._gene ? this._gene.eyes : null
     }
 
     public get ears() : Part {
-        return this._gene !== null ? this._gene.ears : null
+        return this._gene ? this._gene.ears : null
     }
 
     public get mouth() : Part {
-        return this._gene !== null ? this._gene.mouth : null
+        return this._gene ? this._gene.mouth : null
     }
 
     public get horn() : Part {
-        return this._gene !== null ? this._gene.horn : null
+        return this._gene ? this._gene.horn : null
     }
 
     public get back() : Part {
-        return this._gene !== null ? this._gene.back : null
+        return this._gene ? this._gene.back : null
     }
 
     public get tail() : Part {
-        return this._gene !== null ? this._gene.tail : null
+        return this._gene ? this._gene.tail : null
     }
 
     json () {
@@ -106,7 +109,9 @@ class Axie {
             stage: this.stage,
             stats: this.stats,
             matronId: this.matronId,
+            matron: this.matron ? this.matron.json() : null,
             sireId: this.sireId,
+            sire: this.sire ? this.sire.json() : null,
             geneCode: this.geneCode,
             gene: {
                 cls: this.cls,
@@ -119,6 +124,20 @@ class Axie {
                 tail: this.tail,
             }
         }
+    }
+
+    async save () {
+        const collection = await database.getCollection(Axie.COLLECTION_NAME);
+        await collection.updateOne(
+            {id: this.id},
+            {$set: {...this.json(), ...{created_at: new Date()}}},
+            {upsert: true});
+    }
+
+    async findOne (axieId: string): Promise<any> {
+        const collection = await database.getCollection(Axie.COLLECTION_NAME);
+        const axie = await collection.findOne({id: axieId});
+        return axie
     }
 }
 
