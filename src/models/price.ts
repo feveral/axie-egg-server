@@ -28,7 +28,7 @@ class Price {
         let num = 0;
         const reversedValue = this._reverseString(value)
         for (let i = 0; i < reversedValue.length; i++) {
-            num += Math.pow(10, i - 18)
+            num += parseInt(reversedValue[i])*Math.pow(10, i - 18);
         }
         return num;
     }
@@ -40,6 +40,7 @@ class Price {
             value *= 10;
             str += Math.floor(value) % 10;
         }
+        str = str.replace(/^0+/, '');
         return str;
     }
 
