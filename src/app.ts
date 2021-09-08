@@ -30,8 +30,8 @@ app.use((ctx) => {
 })
 
 app.listen(config.serverPort, () => {
-    console.log(`[Info] Mode: ${process.env.NODE_ENV}`)
-    console.log(`[Info] Server is listening on port ${config.serverPort}.`)
+    console.log(`[Info]: Mode: ${process.env.NODE_ENV}`)
+    console.log(`[Info]: Server is listening on port ${config.serverPort}.`)
     app.emit("app_started")
 })
 
